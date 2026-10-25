@@ -13,6 +13,8 @@ PASS="$(head -c 24 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 20)"   #
 AUTH='MediaBrowser Client="LiveHubIT", Device="ci", DeviceId="livehub-it", Version="1"'
 TOKEN=""
 fail() { echo "FAIL: $*" >&2; exit 1; }
+# Jellyfin answers /System/Info/Public early with a start-up page: wait until it is the real server.
+wait_up() { for _ in $(seq 1 120); do curl -fsS "$JF/System/Info/Public" 2>/dev/null | jq -e '.Version != null and .StartupWizardCompleted != null' >/dev/null 2>&1 && return 0; sleep 2; done; return 1; }
 ok() { echo "ok - $*"; }
 
 jf() { # method path [json]
@@ -40,7 +42,7 @@ trap '"${COMPOSE[@]}" down -v >/dev/null 2>&1 || true' EXIT
 "${COMPOSE[@]}" up -d --build
 
 echo "waiting for Jellyfin..."
-for _ in $(seq 1 90); do curl -fsS "$JF/System/Info/Public" >/dev/null 2>&1 && break; sleep 2; done
+wait_up || fail "Jellyfin did not start"
 curl -fsS "$JF/System/Info/Public" | jq -e '.Version | startswith("12.3")' >/dev/null || fail "Jellyfin 12.3 not running"
 ok "Jellyfin 12.3 is up"
 
@@ -59,7 +61,7 @@ jf GET /Packages | jq -e '.[] | select(.name=="Live Hub")' >/dev/null || fail "p
 curl -fsS -X POST "$JF/Packages/Installed/Live%20Hub?assemblyGuid=$GUID&version=$VERSION&repositoryUrl=http%3A%2F%2Frepo%2Fmanifest.json" -H "Authorization: $AUTH, Token=\"$TOKEN\"" >/dev/null
 sleep 5
 "${COMPOSE[@]}" restart jellyfin >/dev/null
-for _ in $(seq 1 90); do curl -fsS "$JF/System/Info/Public" >/dev/null 2>&1 && break; sleep 2; done
+wait_up || fail "Jellyfin did not restart"
 for _ in $(seq 1 30); do jf GET /Plugins | jq -e '.[] | select(.Name=="Live Hub")' >/dev/null 2>&1 && break; sleep 2; done
 jf GET /Plugins | jq -e '.[] | select(.Name=="Live Hub")' >/dev/null || fail "plugin not loaded"
 ok "plugin installed from the repository and loaded"

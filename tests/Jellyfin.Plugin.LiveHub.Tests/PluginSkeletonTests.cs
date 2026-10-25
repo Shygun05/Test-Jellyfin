@@ -64,7 +64,10 @@ public class PluginSkeletonTests
     {
         var yaml = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "build.yaml"));
         Assert.Contains("guid: \"" + Plugin.PluginId + "\"", yaml, StringComparison.Ordinal);
-        Assert.Matches(new Regex("targetAbi: \"12\\.3\\.0\\.0\""), yaml);
+
+        // targetAbi must equal the Jellyfin version the plugin is compiled against (Directory.Build.props).
+        var compiledAgainst = typeof(MediaBrowser.Controller.Channels.IChannel).Assembly.GetName().Version!;
+        Assert.Matches(new Regex("targetAbi: \"" + compiledAgainst.Major + "\\." + compiledAgainst.Minor + "\\.0\\.0\""), yaml);
         Assert.Contains("framework: \"net10.0\"", yaml, StringComparison.Ordinal);
     }
 

@@ -2,7 +2,7 @@
 # Driven by tests/integration/run.sh.
 services:
   jellyfin:
-    image: jellyfin/jellyfin:12.3.0
+    image: jellyfin/jellyfin:12.3
     ports:
       - "18096:8096"
     environment:

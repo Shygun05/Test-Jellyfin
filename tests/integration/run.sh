@@ -84,7 +84,7 @@ for _ in $(seq 1 30); do
 done
 DIAG="$(jf GET /LiveHub/Admin/Diagnostics)"
 echo "$DIAG" | jq -e '.Catalog.Events >= 8 and .Catalog.Channels >= 6' >/dev/null || fail "catalog empty: $DIAG"
-echo "$DIAG" | jq -e '[.Providers[] | select(.LastError != null)] | length == 0' >/dev/null || fail "provider errors: $(echo "$DIAG" | jq -c '[.Providers[]|{ProviderId,LastError}]')"
+echo "$DIAG" | jq -e '[.Providers[] | select((.LastError // "") != "")] | length == 0' >/dev/null || fail "provider errors: $(echo "$DIAG" | jq -c '[.Providers[]|{ProviderId,LastError}]')"
 ok "all mock APIs synchronised ($(echo "$DIAG" | jq -r '.Catalog.Events') events, $(echo "$DIAG" | jq -r '.Catalog.Channels') channels)"
 
 # ---- native Channel

@@ -21,7 +21,7 @@ documentation below is in Italian; UI strings are Italian and English.*
 
 ## Requisiti
 
-- Jellyfin **12.3** (testato su 12.3.0, .NET 10). Il plugin dichiara `targetAbi 12.3.0.0`.
+- Jellyfin **12.2 o più recente** (testato su 12.2.0 e 12.3.0, .NET 10). Il plugin dichiara `targetAbi 12.2.0.0`: Jellyfin lo mostra\n  nel catalogo solo se la sua versione è uguale o superiore, quindi sulle 12.0 e 12.1 non compare.
 - Facoltativo: un proxy/VPN (consigliato [gluetun](https://github.com/qdm12/gluetun)) e Docker.
 
 ## Installazione
@@ -111,7 +111,7 @@ serve nulla sui client. Le app mostrano ciò che il server espone; alcune differ
 | Pagina preferenze | sì | solo da web | solo da web | solo da web |
 | Notifiche (DisplayMessage) | sì | sì | dipende | dipende |
 
-**Verificato** su Jellyfin 12.3.0 per Windows con il client web (vedi sotto). Non ho potuto provare le app
+**Verificato** su Jellyfin 12.2.0 e 12.3.0 per Windows con il client web. Non ho potuto provare le app
 Android, iOS o TV: il comportamento lì è dedotto dalle API usate, non osservato.
 
 ## Risoluzione dei problemi

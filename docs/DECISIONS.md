@@ -264,3 +264,11 @@ MediaSource con la variante scelta dal relay secondo la preferenza. Le lingue so
   se SkiaSharp non fosse disponibile si usa il logo incorporato.
 - Parental control: gli elementi portano `OfficialRating` (se fornito dall'API) e i tag `livehub-src-<provider>`
   utilizzabili come tag bloccati nel profilo utente.
+## D-023 · Compatibilità: compilato contro 12.2, funziona su 12.2 e 12.3
+
+Jellyfin mostra un plugin solo se `targetAbi` ≤ versione del server. Il primo pacchetto era per 12.3.0.0 e non
+compariva sulle 12.2. Il codice usa solo API presenti da 12.2: ora compila contro `Jellyfin.Controller/Model 12.2.0`
+con `targetAbi 12.2.0.0`. Verificato su server reali 12.2.0 (installazione pulita) e 12.3.0 (stesso pacchetto):
+plugin attivo, wizard, sincronizzazione, Channel (8 cartelle), Live TV (14 canali con guida), apertura dello stream e
+download di master/playlist/segmento dal relay. Le versioni 12.0 e 12.1 non sono state provate (non sono pubblicate
+nel repository Windows usato per i test) e restano escluse dal `targetAbi`.

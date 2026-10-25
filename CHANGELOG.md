@@ -4,7 +4,7 @@ Formato: [Keep a Changelog](https://keepachangelog.com/it/1.1.0/). Versioni: `MA
 
 ## [0.1.0.0] - 2026-10-25
 
-Prima versione, per Jellyfin 12.3.
+Prima versione, per Jellyfin 12.2 e 12.3 (compilata contro 12.2, `targetAbi 12.2.0.0`).
 
 ### Aggiunto
 - Provider Definition dichiarative (schema JSON versionato v1) e Provider Engine: REST JSON con JSONPath,

@@ -17,10 +17,13 @@ public sealed class MockOptions
     /// <summary>Gets or sets public HLS URLs to emit instead of the synthetic local ones (real playback in Jellyfin).</summary>
     public IReadOnlyList<string> PublicHlsUrls { get; set; } = Array.Empty<string>();
 
+    /// <summary>Gets or sets a value indicating whether HLS segments are a real, decodable MPEG-TS clip (end-to-end ffmpeg tests).</summary>
+    public bool RealSegments { get; set; }
+
     /// <summary>Reads options from MOCK_PUBLIC_HLS (comma separated URLs, or "1" for the defaults).</summary>
     public static MockOptions FromEnvironment()
     {
-        var o = new MockOptions();
+        var o = new MockOptions { RealSegments = Environment.GetEnvironmentVariable("MOCK_REAL_SEGMENTS") == "1" };
         var env = Environment.GetEnvironmentVariable("MOCK_PUBLIC_HLS");
         if (string.Equals(env, "1", StringComparison.Ordinal) || string.Equals(env, "true", StringComparison.OrdinalIgnoreCase))
         {
@@ -91,7 +94,7 @@ public static class MockServerApp
         MapApi4(app, options, clock);
         MapApi5(app, options, clock);
         MapApi6(app, options, clock);
-        MapHls(app, clock);
+        MapHls(app, options, clock);
     }
 
     private static string Base(HttpContext ctx) => $"{ctx.Request.Scheme}://{ctx.Request.Host}{ctx.Request.PathBase}";
@@ -616,7 +619,7 @@ public static class MockServerApp
     };
 
     // ---------------------------------------------------------------- Synthetic HLS
-    private static void MapHls(IEndpointRouteBuilder app, TimeProvider clock)
+    private static void MapHls(IEndpointRouteBuilder app, MockOptions o, TimeProvider clock)
     {
         app.MapGet("/hls/{name}/master.m3u8", (HttpContext ctx, string name) =>
         {
@@ -646,6 +649,11 @@ public static class MockServerApp
                 return Results.StatusCode(name.StartsWith("brokenseg", StringComparison.Ordinal) ? 503 : 403);
             }
 
+            if (o.RealSegments)
+            {
+                return Results.Bytes(RealSegment.Value, "video/mp2t");
+            }
+
             var payload = Encoding.ASCII.GetBytes($"LIVEHUB-SEG|{name}|{variant}|{segment}|");
             var data = new byte[188 * 8];
             for (var i = 0; i < data.Length; i += 188)
@@ -657,6 +665,15 @@ public static class MockServerApp
             return Results.Bytes(data, "video/mp2t");
         });
     }
+
+    private static readonly Lazy<byte[]> RealSegment = new(() =>
+    {
+        using var stream = typeof(MockServerApp).Assembly.GetManifestResourceStream("LiveHub.MockServer.segment.ts")
+            ?? throw new InvalidOperationException("segment.ts resource missing");
+        using var ms = new MemoryStream();
+        stream.CopyTo(ms);
+        return ms.ToArray();
+    });
 
     private static bool Denied(HttpContext ctx, string name)
     {

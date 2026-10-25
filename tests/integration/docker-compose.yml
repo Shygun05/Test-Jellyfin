@@ -16,7 +16,7 @@ services:
       context: ../..
       dockerfile: tests/integration/mock.Dockerfile
     environment:
-      - MOCK_PUBLIC_HLS=1          # events point to free public HLS test streams (real decoding by ffmpeg)
+      - MOCK_REAL_SEGMENTS=1       # HLS segments are a real 2 s MPEG-TS clip: ffmpeg decodes it, no Internet needed
       - ASPNETCORE_URLS=http://+:5055
 
   repo:

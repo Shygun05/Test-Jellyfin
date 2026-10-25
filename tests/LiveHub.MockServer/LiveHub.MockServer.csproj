@@ -8,4 +8,8 @@
     <RootNamespace>LiveHub.MockServer</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="segment.ts" LogicalName="LiveHub.MockServer.segment.ts" />
+  </ItemGroup>
+
 </Project>
